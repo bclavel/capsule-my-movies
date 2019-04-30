@@ -9,11 +9,27 @@ import { faHeart as faHeartSolid } from '@fortawesome/free-solid-svg-icons'
 
 
 class App extends Component {
+
  render() {
-   var listMovies = []
-   for (var i = 0; i < 19; i++) {
-     listMovies.push(<Col xs='12' sm='6' lg='3'><Film/></Col>)
-   }
+
+   var moviesData = [{
+     name: 'L\'Odyssée sans but de Kóstas Mítroglou',
+     desc: 'Après que leur club ait été victime d\'une violente tempête au mercato, un adolescent et un attaquant grec en mal d\'efficacité …',
+     img: './images/pi.jpg'
+   },{
+     name: 'Jean-Michel le maléfique',
+     desc: 'Poussée par la vengeance et une volonté farouche de protéger son club de marde qu\'il préside, Jean-Michel place ...',
+     img: './images/malefique.jpg'
+   },{
+     name: 'Tintin au pays des gilets jaunes',
+     desc: 'Après avoir regardé les infos sur le MediaTV, Tintin, un jeune reporter, se retrouve entraîné dans une bien triste aventure...',
+     img: './images/tintin.jpg'
+   }]
+
+  var moviesList = moviesData.map((movie, i) => {
+    return <Film movieName={movie.name} movieDesc={movie.desc} movieImg={movie.img} key={i} />
+  })
+
   return (
     <div style={styles.background}>
        <Container>
@@ -21,14 +37,14 @@ class App extends Component {
           <Col><Header/></Col>
         </Row>
         <Row>
-          <Col xs='12' sm='6' lg='3'><FilmHeart/></Col>
-          {listMovies}
+          {moviesList}
         </Row>
       </Container>
     </div>
     );
   }
 }
+
 
 
 class Header extends Component {
@@ -46,6 +62,26 @@ toggle() {
   });
 }
  render() {
+   var moviesNameList = ['Titre1', 'Titre2', 'Titre3', 'Titre4', 'Titre5']
+   var moviesLast = []
+   var moviesCount = ''
+
+   console.log(moviesNameList);
+
+   if (moviesNameList.length == 0) {
+     moviesLast = 'Aucun film sélectionné'
+     moviesCount = '0 film'
+   } else if (moviesNameList.length == 1){
+     moviesLast = moviesNameList
+     moviesCount = `${moviesNameList.length} film`
+   } else if (moviesNameList.length == 2 || moviesNameList.length == 3) {
+     moviesLast = moviesNameList.join(', ')
+     moviesCount = `${moviesNameList.length} films`
+   } else {
+     moviesLast = moviesNameList.slice(moviesNameList.length - 3).join(', ') + '...'
+     moviesCount = `${moviesNameList.length} films`
+   }
+
   return (
     <div>
         <Navbar color="#161d23" light expand="md">
@@ -60,11 +96,11 @@ toggle() {
                 <NavLink href="#" style={styles.navLinksMyMovies}>My Movies</NavLink>
               </NavItem>
               <Button id="UncontrolledPopover" type="button" style={styles.navLinksLikes}>
-                      11 films
+                      {moviesCount}
               </Button>
               <UncontrolledPopover placement="bottom" target="UncontrolledPopover">
                 <PopoverHeader>Derniers films ajoutés</PopoverHeader>
-                <PopoverBody>Tintin au pays des gilets jaunes</PopoverBody>
+                <PopoverBody>{moviesLast}</PopoverBody>
               </UncontrolledPopover>
             </Nav>
           </Collapse>
@@ -78,44 +114,46 @@ toggle() {
 class Film extends Component {
  render() {
   return (
-    <div style={styles.film}>
-      <Card>
-        <FontAwesomeIcon icon={faHeart} style={styles.styleHeart} />
-        <CardImg top width="100%" src="../images/malefique.jpg" alt="Card image cap" />
-        <CardBody style={styles.cardBody}>
-          <CardTitle style={styles.filmTitle}>Maléfique</CardTitle>
-          <CardSubtitle style={styles.filmText}>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</CardSubtitle>
-        </CardBody>
-      </Card>
-    </div>
+    <Col xs='12' sm='6' lg='3'>
+      <div style={styles.film}>
+        <Card>
+          <FontAwesomeIcon icon={faHeart} style={styles.styleHeart} />
+          <CardImg top width="100%" src={this.props.movieImg} alt={this.props.movieName} />
+          <CardBody style={styles.cardBody}>
+            <CardTitle style={styles.filmTitle}>{this.props.movieName}</CardTitle>
+            <CardSubtitle style={styles.filmText}>{this.props.movieDesc}</CardSubtitle>
+          </CardBody>
+        </Card>
+      </div>
+    </Col>
   );
  }
 }
 
 
-class FilmHeart extends Component {
- render() {
-  return (
-    <div style={styles.film}>
-      <Card>
-        <FontAwesomeIcon icon={faHeartSolid} style={styles.styleHeartActive} />
-        <CardImg top width="100%" src="../images/tintin.jpg" alt="Card image cap" />
-        <CardBody style={styles.cardBody}>
-          <CardTitle style={styles.filmTitle}>Tintin au pays des gilets jaunes</CardTitle>
-          <CardSubtitle style={styles.filmText}>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</CardSubtitle>
-        </CardBody>
-      </Card>
-    </div>
-  );
- }
-}
+// class FilmHeart extends Component {
+//  render() {
+//   return (
+//     <div style={styles.film}>
+//       <Card>
+//         <FontAwesomeIcon icon={faHeartSolid} style={styles.styleHeartActive} />
+//         <CardImg top width="100%" src="../images/tintin.jpg" alt="Card image cap" />
+//         <CardBody style={styles.cardBody}>
+//           <CardTitle style={styles.filmTitle}>Tintin au pays des gilets jaunes</CardTitle>
+//           <CardSubtitle style={styles.filmText}>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</CardSubtitle>
+//         </CardBody>
+//       </Card>
+//     </div>
+//   );
+//  }
+// }
 
 
 
 var styles = {
   background : {
     backgroundColor : '#131A20',
-    height: '100%'
+    height: '100vh'
   },
   header : {
     marginBottom: '8%',
