@@ -6,6 +6,8 @@ import { Collapse, Navbar, NavbarToggler, NavbarBrand, Nav, NavItem, NavLink, Un
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faHeart } from '@fortawesome/free-regular-svg-icons'
 import { faHeart as faHeartSolid } from '@fortawesome/free-solid-svg-icons'
+import Film from './components/Film'
+import Header from './components/Header'
 
 
 class App extends Component {
@@ -18,7 +20,9 @@ class App extends Component {
   this.state = {
     viewOnlyLike : false,
     moviesNameList : [],
-    moviesCount : 0
+    moviesCount : 0,
+    movies : [],
+    moviesLiked  : []
   };
 }
 
@@ -64,29 +68,46 @@ class App extends Component {
     }
   }
 
+  componentDidMount(){
+    var ctx = this
+    fetch('http://localhost:3000/movies')
+    .then(function(response) {
+      return response.json()
+    })
+    .then(function(data) {
+      console.log('console log de data avant setState >>>', data);
+      console.log('console log de movies avant setState >>>', ctx.state.movies);
+      ctx.setState({
+        movies : data.body.results
+      })
+      console.log('console log de movies après setState >>>', ctx.state.movies);
+    })
+
+    fetch('http://localhost:3000/mymovies')
+    .then(function(response) {
+      return response.json()
+    })
+    .then(function(data) {
+      var moviesNameListCopy = data.movies.map((movie) => {
+        return movie.title
+      })
+      ctx.setState({
+        moviesLiked : data.movies,
+        moviesCount : data.movies.length,
+        moviesNameList : moviesNameListCopy
+      })
+    })
+  }
+
  render() {
-   console.log('log de this app', this);
-
-   var moviesData = [{
-     name: 'L\'Odyssée sans but de Kóstas Mítroglou',
-     desc: 'Après que leur club ait été victime d\'une violente tempête au mercato, un adolescent et un attaquant grec en mal d\'efficacité …',
-     img: './images/pi.jpg',
-   },{
-     name: 'Jean-Michel le maléfique',
-     desc: 'Poussée par la vengeance et une volonté farouche de protéger son club de marde qu\'il préside, Jean-Michel place ...',
-     img: './images/malefique.jpg',
-   },{
-     name: 'Tintin au pays des gilets jaunes',
-     desc: 'Après avoir regardé les infos sur le MediaTV, Tintin, un jeune reporter, se retrouve entraîné dans une bien triste aventure...',
-     img: './images/tintin.jpg',
-   },{
-     name: 'Les aventures de Bernardo',
-     desc: 'Après vingt ans de prison, Don Diego de La Vega, alias Bernardo, est toujours poursuivi par l\'impitoyable...',
-     img: './images/thumb.jpg',
-   }]
-
-  var moviesList = moviesData.map((movie, i) => {
-    return <Film movieName={movie.name} movieDesc={movie.desc} movieImg={movie.img} key={i} displayOnlyLike={this.state.viewOnlyLike} handleClickApp={this.handleClickHeart}  />
+  var baseUrl = "http://image.tmdb.org/t/p/w500"
+  var moviesList = this.state.movies.map((movie, i) => {
+    var isLiked = false;
+    if (this.state.moviesLiked.find(movies => movies.title === movie.title)) {
+      isLiked = true
+      console.log('match trouvé');
+    }
+    return <Film movieName={movie.title} movieDesc={movie.overview} movieImg={baseUrl + movie.poster_path} movieId={movie.id} key={i} displayOnlyLike={this.state.viewOnlyLike} handleClickApp={this.handleClickHeart} movieLiked={isLiked}  />
   })
   console.log('state de viewOnlyLike ->', this.state.viewOnlyLike);
   return (
@@ -102,116 +123,6 @@ class App extends Component {
     </div>
     );
   }
-}
-
-
-class Header extends Component {
-  constructor(props) {
-  super(props);
-
-  this.toggle = this.toggle.bind(this);
-  this.state = {
-    isOpen: false,
-  };
-}
-
-toggle() {
-  this.setState({
-    isOpen: !this.state.isOpen
-  });
-}
- render() {
-    var moviesLast
-     if (this.props.listeMovies.length == 0) {
-       moviesLast = 'Aucun film sélectionné'
-     } else if (this.props.listeMovies.length == 1){
-       moviesLast = this.props.listeMovies
-     } else if (this.props.listeMovies.length == 2 || this.props.listeMovies.length == 3) {
-       moviesLast = this.props.listeMovies.join(', ')
-     } else {
-       moviesLast = this.props.listeMovies.slice(this.props.listeMovies.length - 3).join(', ') + '...'
-     }
-    return (
-    <div>
-        <Navbar color="#161d23" light expand="md">
-          <NavbarBrand href="/"><img style={styles.headerLogo} src="../images/logo.png"/></NavbarBrand>
-          <NavbarToggler onClick={this.toggle} />
-          <Collapse isOpen={this.state.isOpen} navbar>
-            <Nav className="ml-1" navbar>
-              <NavItem>
-                <NavLink href="#" style={(this.props.displayOnlyLike) ? styles.navLinksOn : styles.navLinksOff} onClick={this.props.handleClickLikeOff}>Last releases</NavLink>
-              </NavItem>
-              <NavItem>
-                <NavLink href="#" style={(this.props.displayOnlyLike) ? styles.navLinksOff : styles.navLinksOn} onClick={this.props.handleClickLikeOn}>My Movies</NavLink>
-              </NavItem>
-              <Button id="UncontrolledPopover" type="button" style={styles.navLinksLikes}>{this.props.heartCount} {(this.props.heartCount > 1) ? 'films' : 'film'}</Button>
-              <UncontrolledPopover placement="bottom" target="UncontrolledPopover">
-                <PopoverHeader>Derniers films ajoutés</PopoverHeader>
-                <PopoverBody>{moviesLast}</PopoverBody>
-              </UncontrolledPopover>
-            </Nav>
-          </Collapse>
-        </Navbar>
-      </div>
-  );
- }
-}
-
-
-
-class Film extends Component {
-
-  constructor() {
-   super();
-   this.likeClick = this.likeClick.bind(this);
-   this.state = {
-     like : false,
-   }
-  }
-
-  likeClick(){
-   console.log("love click détécté");
-   this.props.handleClickApp(this.state.like, this.props.movieName)
-   if (!this.state.like) {
-     this.setState({
-       like : true
-     })
-   } else {
-     this.setState({
-       like : false
-   })
-  }
-}
- render() {
-   var displayFilm;
-   if (!this.props.displayOnlyLike) {
-     displayFilm = true
-   } else if (this.props.displayOnlyLike && this.state.like){
-     displayFilm = true
-   } else {
-     displayFilm = false
-   }
-   var heart
-   if (this.state.like) {
-     heart = <FontAwesomeIcon icon={faHeartSolid} style={styles.styleHeartActive} onClick={this.likeClick} />
-   } else {
-     heart = <FontAwesomeIcon icon={faHeart} style={styles.styleHeart} onClick={this.likeClick} />
-   }
-  return (
-    <Col xs='12' sm='6' lg='3' style={{display : (displayFilm) ? 'block' : 'none'}}>
-      <div style={styles.film}>
-        <Card>
-          {heart}
-          <CardImg top width="100%" src={this.props.movieImg} alt={this.props.movieName} />
-          <CardBody style={styles.cardBody}>
-            <CardTitle style={styles.filmTitle}>{this.props.movieName}</CardTitle>
-            <CardSubtitle style={styles.filmText}>{this.props.movieDesc}</CardSubtitle>
-          </CardBody>
-        </Card>
-      </div>
-    </Col>
-  );
- }
 }
 
 var styles = {
